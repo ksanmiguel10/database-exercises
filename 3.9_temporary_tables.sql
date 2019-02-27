@@ -73,20 +73,8 @@ SELECT d.dept_name, s.emp_no, s.salary, ((s.salary-a.avg_salary)/a.stdev_salary)
 GROUP BY a.dept_name;
 
 -- What is the average salary for an employee based on the number of years they have been with the company? Express your answer in terms of the Z-score of salary. Since this data is a little older, scale the years of experience by subtracting the minumum from every row.
-SELECT AVG(salary), STDDEV(salary)
-FROM employees.salaries
-WHERE to_date > NOW();
-
-SELECT emp_no, salary, ((salary-72012)/17310) AS z_salary
-FROM employees.salaries
-WHERE to_date > NOW();
-
-SELECT a.dept_name, AVG(a.z_salary) AS avg_z_salary
-FROM (
-	SELECT d.dept_name, s.emp_no, s.salary, ((s.salary-72012)/17310) AS z_salary
-	FROM employees.salaries s
-	JOIN employees.dept_emp de ON s.emp_no = de.emp_no
-	JOIN employees.departments d ON de.dept_no = d.dept_no
-	WHERE s.to_date > NOW()
-    ) a
-GROUP BY a.dept_name;
+SELECT ROUND((DATEDIFF(NOW(), hire_date)) / 365.25) - 19 AS years_with_company,
+	   AVG(emp_z_score) AS salary_z_score
+FROM employees.employees
+JOIN z_scores_table USING (emp_no)
+GROUP BY years_with_company;
